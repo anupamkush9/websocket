@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-Time Post List</title>
+</head>
+
+<body>
+  <div class="row mt-5">
+    <div class="col-1"></div>
+    <div class="col-10">
+      <div class="card">
+        <p class="card-header">Display list of all the posts in Real-Time</p>
+        <div class="card-body">
+          <table class="table align-middle mb-0 bg-white">
+            <thead class="bg-light">
+              <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Author</th>
+              </tr>
+            </thead>
+            <tbody id="postTableBody">
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ws = new WebSocket("ws://localhost:8000/ws/");
+
+    function updateRowInTable(post) {
+      const rowToUpdate = document.getElementById(`postRow_${post.id}`);
+      if (rowToUpdate) {
+        rowToUpdate.innerHTML = `
+          <td>${post.title}</td>
+          <td>${post.status}</td>
+          <td>${post.author}</td>
+        `;
+      }
+    }
+
+    function deleteRowFromTable(postId) {
+      const rowToDelete = document.getElementById(`postRow_${postId}`);
+      if (rowToDelete) {
+        rowToDelete.remove();
+      }
+    }
+
+    ws.onopen = function (e) {
+      ws.send(
+        JSON.stringify({
+          action: "list",
+          request_id: new Date().getTime(),
+        })
+      );
+    };
+
+    ws.onmessage = function (e) {
+      const data = JSON.parse(e.data);
+      console.log("datall",data);
+      console.log("data.action",data.action);
+      if (data.action === "list") {
+        const tbodyElement = document.getElementById("postTableBody");
+        tbodyElement.innerHTML = ""; // Clear the table before updating
+
+        data.data.forEach(post => {
+          const row = document.createElement("tr");
+          row.setAttribute("id", `postRow_${post.id}`);
+          row.innerHTML = `
+            <td>${post.title}</td>
+            <td>${post.status}</td>
+            <td>${post.author}</td>
+          `;
+          tbodyElement.appendChild(row);
+        });
+      } else if (data.action === "create") {
+        // When "create" action is received, the data will be a single post object
+        const post = data.data;
+        const newRow = document.createElement("tr");
+        newRow.setAttribute("id", `postRow_${post.id}`);
+        newRow.innerHTML = `
+          <td>${post.title}</td>
+          <td>${post.status}</td>
+          <td>${post.author}</td>
+        `;
+        document.getElementById("postTableBody").appendChild(newRow);
+      } else if (data.action === "update") {
+        // When "update" action is received, the data will be a single post object
+        const post = data.data;
+        updateRowInTable(post);
+      } else if (data.action === "delete") {
+        const postId = data.data.id;
+        deleteRowFromTable(postId);
+      }
+    };
+  </script>
+</body>
+
+</html>
