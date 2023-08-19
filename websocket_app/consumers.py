@@ -3,6 +3,8 @@ from asgiref.sync import async_to_sync
 from channels.consumer import SyncConsumer
 from channels.consumer import AsyncConsumer
 from channels.exceptions import StopConsumer
+import time
+
 class MySyncConsumer(SyncConsumer):
 
     def websocket_connect(self, event):
@@ -12,11 +14,12 @@ class MySyncConsumer(SyncConsumer):
         print("sync websocket connection established")
 
     def websocket_receive(self, event):
-        self.send({
-            "type": "websocket.send",
-            "text": event["text"],
-        })
-        print("sync websocket connection received")
+        for i in range(50):
+            self.send({
+                "type": "websocket.send",
+                "text": str(i),
+            })
+            time.sleep(1)
     
     def websocket_disconnect(self, event):
         print("sync websocket consumer disconnect")
@@ -32,11 +35,13 @@ class MyAsyncConsumer(AsyncConsumer):
         print("Async websocket connection established")
 
     async def websocket_receive(self, event):
-        await self.send({
-            "type": "websocket.send",
-            "text": event["text"],
-        })
-        print("Async consumer websocket connection received")
+        for i in range(50):
+            await self.send({
+                "type": "websocket.send",
+                "text": str(i),
+            })
+            time.sleep(1)
+
 
     def websocket_disconnect(self, event):
         print("Async websocket consumer disconnect")
