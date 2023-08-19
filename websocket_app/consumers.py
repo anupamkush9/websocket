@@ -1,27 +1,35 @@
 import json
 from asgiref.sync import async_to_sync
-from channels.generic.websocket import WebsocketConsumer
+from channels.consumer import SyncConsumer
+from channels.consumer import AsyncConsumer
+
+class MySyncConsumer(SyncConsumer):
+
+    def websocket_connect(self, event):
+        self.send({
+            "type": "websocket.accept",
+        })
+        print("sync websocket connection established")
+
+    def websocket_receive(self, event):
+        self.send({
+            "type": "websocket.send",
+            "text": event["text"],
+        })
+        print("sync websocket connection received")
 
 
-class WebsocketConsumer(WebsocketConsumer):
-    def connect(self):
-        self.room_name = "abc"
-        self.room_group_name = f"chat_{self.room_name}"
+class MyAsyncConsumer(AsyncConsumer):
 
-        # Join room group
-        async_to_sync(self.channel_layer.group_add)(
-            self.room_group_name, self.channel_name
-        )
-        self.accept()
+    async def websocket_connect(self, event):
+        await self.send({
+            "type": "websocket.accept",
+        })
+        print("Async websocket connection established")
 
-
-    # Receive message from WebSocket
-    def receive(self, text_data):
-        self.send(text_data=json.dumps({"server message":f"Hurrah i have receieved the message {text_data}"}))
-
-    def disconnect(self, close_code):
-        pass
-        # Leave room group
-        # async_to_sync(self.channel_layer.group_discard)(
-        #     self.room_group_name, self.channel_name
-        # )
+    async def websocket_receive(self, event):
+        await self.send({
+            "type": "websocket.send",
+            "text": event["text"],
+        })
+        print("Async consumer websocket connection received")
