@@ -2,7 +2,7 @@ import json
 from asgiref.sync import async_to_sync
 from channels.consumer import SyncConsumer
 from channels.consumer import AsyncConsumer
-
+from channels.exceptions import StopConsumer
 class MySyncConsumer(SyncConsumer):
 
     def websocket_connect(self, event):
@@ -17,6 +17,10 @@ class MySyncConsumer(SyncConsumer):
             "text": event["text"],
         })
         print("sync websocket connection received")
+    
+    def websocket_disconnect(self, event):
+        print("sync websocket consumer disconnect")
+        raise StopConsumer()
 
 
 class MyAsyncConsumer(AsyncConsumer):
@@ -33,3 +37,7 @@ class MyAsyncConsumer(AsyncConsumer):
             "text": event["text"],
         })
         print("Async consumer websocket connection received")
+
+    def websocket_disconnect(self, event):
+        print("Async websocket consumer disconnect")
+        raise StopConsumer()
