@@ -15,8 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from websocket_app.views import IndexView
+from websocket_app.views import IndexView, RoomView
 
 urlpatterns = [
     path('', IndexView.as_view(), name='index'),
+    path("<str:room_name>/", RoomView.as_view(), name="room"),
 ]

@@ -1,63 +1,27 @@
+<!-- chat/templates/chat/index.html -->
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title></title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="">
-    </head>
-    <body>
-        <h1>Welcome to Home Page</h1>
-        <div id="data-container"></div>
+<head>
+    <meta charset="utf-8"/>
+    <title>Chat Rooms</title>
+</head>
+<body>
+    What chat room would you like to enter?<br>
+    <input id="room-name-input" type="text" size="100"><br>
+    <input id="room-name-submit" type="button" value="Enter">
 
-        <script>
-            const socket = new WebSocket('ws://localhost:8000/ws/sync_consumer/');
-            
-            socket.onopen = function(event) {
-                console.log('WebSocket connection is open.');
-                socket.send("Hi message from client");
-            };
-            
-            socket.onmessage = function(event) {
-                console.log('Received data:', event);
-                const receivedData = event.data;
-            
-                // Update the UI with the received data
-                const dataContainer = document.getElementById('data-container');
-                dataContainer.textContent = receivedData;
-            };
-            
-            socket.onclose = function(event) {
-                console.log('WebSocket connection is closed.');
-            };
-        </script>
-        
-            
-        {% comment %} 
-        // Another way to calling web socket API.
-        <script>
-            const socket = new WebSocket('ws://localhost:8000/ws/sync_consumer/');
-            
-            socket.addEventListener('open', event => {
-                console.log('WebSocket connection is open.');
-                socket.send("Hi message from client");
-            });
-            
-            socket.addEventListener('message', event => {
-                console.log('Received data:', event);
-                receivedData = event.data;
-            
-                // Update the UI with the received data
-                const dataContainer = document.getElementById('data-container');
-                dataContainer.textContent = receivedData;
-            });
-            
-            socket.addEventListener('close', event => {
-                console.log('WebSocket connection is closed.');
-            });
-            </script> {% endcomment %}
-            
-    </body>
+    <script>
+        document.querySelector('#room-name-input').focus();
+        document.querySelector('#room-name-input').onkeyup = function(e) {
+            if (e.key === 'Enter') {  // enter, return
+                document.querySelector('#room-name-submit').click();
+            }
+        };
+
+        document.querySelector('#room-name-submit').onclick = function(e) {
+            var roomName = document.querySelector('#room-name-input').value;
+            window.location.pathname = '/' + roomName + '/';
+        };
+    </script>
+</body>
 </html>
