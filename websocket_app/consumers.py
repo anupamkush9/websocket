@@ -4,6 +4,8 @@ from channels.consumer import SyncConsumer
 from channels.consumer import AsyncConsumer
 from channels.exceptions import StopConsumer
 import time
+from websocket_app.models import Chat, Group
+# from channels.db import database_sync_to_async
 
 class MySyncConsumer(SyncConsumer):
 
@@ -26,12 +28,19 @@ class MySyncConsumer(SyncConsumer):
         print("text_data_json:::", text_data_json)
         print("text_data_json:::", type(text_data_json))
         message = text_data_json["message"]
+        
+        group = Group.objects.get(name = self.room_name)
+        print("------->",group)
+        print("---type---->",type(group))
+        chat = Chat(content=text_data_json["message"],
+                    group=group)
+        chat.save()
 
         # Send message to room group
         async_to_sync(self.channel_layer.group_send)(
             self.room_name, {"type": "chat.message", "message": text_data_json}
         )
-    
+
     # Receive message from room group
     def chat_message(self, event):
         print("chat_message event:::", event)

@@ -5,8 +5,12 @@
     <title>Chat Room</title>
 </head>
 <body>
-    <h1> Welcome to {{room_name}} room </h1>
-    <textarea id="chat-log" cols="100" rows="20"></textarea><br>
+    <h1> Welcome to {{room_name}} room</h1>
+    <textarea id="chat-log" cols="100" rows="20">
+        {% for chat in chats %}
+            {{ chat.content }}
+        {% endfor %}
+    </textarea><br>
     <input id="chat-message-input" type="text" size="100"><br>
     <input id="chat-message-submit" type="button" value="Send">
     {{ room_name|json_script:"room-name" }}
@@ -23,13 +27,13 @@
         const chatSocket = new WebSocket(
             'ws://'
             + window.location.host
-            + '/ws/async_consumer/'
+            + '/ws/sync_consumer/'
             + roomName
             + '/'
         );
 
         chatSocket.onmessage = function(e) {
-            console.log("log e ", e);
+            console.log("onmessage log e ", e);
             const data = e.data;
             document.querySelector('#chat-log').value += (data + '\n');
         };
