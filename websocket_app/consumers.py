@@ -91,17 +91,26 @@ class MyAsyncConsumer(AsyncConsumer):
         print("text_data_json:::", type(text_data_json))
         message = text_data_json["message"]
 
-        group  = await database_sync_to_async(Group.objects.get)(name = self.room_name)
-        print("------->",group)
-        print("---type---->",type(group))
-        chat = Chat(content=text_data_json["message"],
-                    group=group)
-        await database_sync_to_async(chat.save)()
-
-        # Send message to room group
-        await self.channel_layer.group_send(
-            self.room_name, {"type": "chat.message", "message": text_data_json}
-        )
+        print("--user-----_>", self.scope['user'])
+        print("--username-----_>", self.scope['user'].username)
+        print("--dir(user)-----_>", dir(self.scope['user']))
+        print("---.self.scope['user'].is_authenticated----", self.scope['user'].is_authenticated)
+        if self.scope['user'].is_authenticated :
+            group  = await database_sync_to_async(Group.objects.get)(name = self.room_name)
+            print("------->",group)
+            print("---type---->",type(group))
+            chat = Chat(content=text_data_json["message"],
+                        group=group)
+            await database_sync_to_async(chat.save)()
+            text_data_json["user"] = self.scope['user'].username
+            # Send message to room group
+            await self.channel_layer.group_send(
+                self.room_name, {"type": "chat.message", "message": text_data_json}
+            )
+        else:
+            await self.channel_layer.group_send(
+                self.room_name, {"type": "chat.message", "message": {"user": "Annonymous user", "message": "Login Required"}}
+            )
 
 
     # Receive message from room group
@@ -119,7 +128,7 @@ class MyAsyncConsumer(AsyncConsumer):
         # Send message to WebSocket
         await self.send({
                 "type": "websocket.send",
-                "text": message,
+                "text": json.dumps(text_data_json),
             })
 
     async def websocket_disconnect(self, event):
