@@ -28,19 +28,22 @@ class MySyncConsumer(SyncConsumer):
         print("text_data_json:::", text_data_json)
         print("text_data_json:::", type(text_data_json))
         message = text_data_json["message"]
-        
-        group = Group.objects.get(name = self.room_name)
-        print("------->",group)
-        print("---type---->",type(group))
-        chat = Chat(content=text_data_json["message"],
-                    group=group)
-        chat.save()
+        if self.scope['user'].is_authenticated :
+            group = Group.objects.get(name = self.room_name)
+            print("------->",group)
+            print("---type---->",type(group))
+            chat = Chat(content=text_data_json["message"],
+                        group=group)
+            chat.save()
 
-        # Send message to room group
-        async_to_sync(self.channel_layer.group_send)(
-            self.room_name, {"type": "chat.message", "message": text_data_json}
-        )
-
+            # Send message to room group
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_name, {"type": "chat.message", "message": text_data_json}
+            )
+        else:
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_name, {"type": "chat.message", "message": {"user": "Annonymous user", "message": "Login Required"}}
+            )
     # Receive message from room group
     def chat_message(self, event):
         print("chat_message event:::", event)
