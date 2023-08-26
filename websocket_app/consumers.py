@@ -4,9 +4,10 @@ from channels.consumer import SyncConsumer
 from channels.consumer import AsyncConsumer
 from channels.exceptions import StopConsumer
 import time
+import asyncio
 from websocket_app.models import Chat, Group
 from channels.db import database_sync_to_async
-from channels.generic.websocket import WebsocketConsumer
+from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
 
 class MySyncConsumer(SyncConsumer):
 
@@ -174,5 +175,37 @@ class MyWebsocketConsumer(WebsocketConsumer):
 
     # def disconnect(self, close_code):
     #     print("Disconnecting.........")
+        # Called when the socket closes
+
+class MyAsyncWebsocketConsumer(AsyncWebsocketConsumer):
+
+    async def connect(self):
+        # To accept the connection call:
+        # Called on connection.
+        print("connection established", self)
+        await self.accept()
+        # # Or accept the connection and specify a chosen subprotocol.
+        # # A list of subprotocols specified by the connecting client
+        # # will be available in self.scope['subprotocols']
+        # self.accept("subprotocol")
+        # To reject the connection, call:
+        # self.close()
+
+    async def receive(self, text_data=None, bytes_data=None):
+        # Called with either text_data or bytes_data for each frame
+        # You can call:
+        print("text_data:::", text_data)
+        for i in range(20):
+            await self.send(text_data=json.dumps({"message":str(i)}))
+            await asyncio.sleep(1)
+        # Or, to send a binary frame:
+        # self.send(bytes_data="Hello world!")
+        # Want to force-close the connection? Call:
+        # self.close()
+        # Or add a custom WebSocket error code!
+        # self.close(code=4123)
+
+    async def disconnect(self, close_code):
+        print("Disconnecting.........")
         # Called when the socket closes
 
