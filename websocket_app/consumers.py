@@ -147,8 +147,9 @@ class MyAsyncConsumer(AsyncConsumer):
 class MyWebsocketConsumer(WebsocketConsumer):
 
     def connect(self):
-        # Called on connection.
         # To accept the connection call:
+        # Called on connection.
+        print("connection established", self)
         self.accept()
         # # Or accept the connection and specify a chosen subprotocol.
         # # A list of subprotocols specified by the connecting client
@@ -160,14 +161,18 @@ class MyWebsocketConsumer(WebsocketConsumer):
     def receive(self, text_data=None, bytes_data=None):
         # Called with either text_data or bytes_data for each frame
         # You can call:
-        self.send(text_data="Hello world!")
+        print("text_data:::", text_data)
+        for i in range(20):
+            time.sleep(1)
+            self.send(text_data=json.dumps({"message":str(i)}))
         # Or, to send a binary frame:
         # self.send(bytes_data="Hello world!")
         # Want to force-close the connection? Call:
         # self.close()
         # Or add a custom WebSocket error code!
-        self.close(code=4123)
+        # self.close(code=4123)
 
-    def disconnect(self, close_code):
-        print("Disconnecting.........")
+    # def disconnect(self, close_code):
+    #     print("Disconnecting.........")
         # Called when the socket closes
+

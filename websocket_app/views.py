@@ -7,7 +7,7 @@ from websocket_app.models import Group, Chat
 class IndexView(View):
     def get(self, request, *args, **kwargs):
         # Your logic for handling the GET request
-        return render(request, 'websocket_app/index.html',)
+        return render(request, 'websocket_app/index_counter.html',)
     
 
 class RoomView(View):
