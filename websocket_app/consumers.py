@@ -5,7 +5,7 @@ from channels.consumer import AsyncConsumer
 from channels.exceptions import StopConsumer
 import time
 from .models import Chat, Group
-from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
+from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer, AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
 
 class MySyncConsumer(SyncConsumer):
@@ -223,6 +223,62 @@ class MyAsyncWebsocketConsumer(AsyncWebsocketConsumer):
 
         # Send message to WebSocket
         await self.send(text_data=json.dumps(message))
+
+
+    # async def disconnect(self, close_code):
+    #     print("Websocket disconnected...")
+        # Called when the socket closes
+
+
+class MyAsyncJsonWebsocketConsumer(AsyncJsonWebsocketConsumer):
+    # groups = ["broadcast"]
+
+    async def connect(self):
+        # Called on connection.
+        # To accept the connection call:
+        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
+        # Join room group
+        await self.channel_layer.group_add(
+            self.room_name, self.channel_name
+        )
+        await self.accept()
+        # Or accept the connection and specify a chosen subprotocol.
+        # A list of subprotocols specified by the connecting client
+        # will be available in self.scope['subprotocols']
+        # self.accept("subprotocol")
+        # To reject the connection, call:
+        # self.close()
+
+    async def receive_json(self, content=None):
+        # Called with either text_data or bytes_data for each frame
+        # You can call:
+        # client_data = json.loads(text_data)
+
+        group = await database_sync_to_async(Group.objects.get)(name = self.room_name)
+        print("------->",group)
+        print("---type---->",type(group))
+        chat = Chat(content=content.get("message"),
+                    group=group)
+        await database_sync_to_async(chat.save)()
+
+        # Send message to room group
+        await self.channel_layer.group_send(
+            self.room_name, {"type": "chat.message", "message": content.get("message")}
+        )
+
+        # Or, to send a binary frame:
+        # self.send(bytes_data="Hello world!")
+        # Want to force-close the connection? Call:
+        # self.close()
+        # Or add a custom WebSocket error code!
+        # self.close(code=4123)
+
+    # Receive message from room group
+    async def chat_message(self, event):
+        message = event["message"]
+
+        # Send message to WebSocket
+        await self.send_json({"message":message})
 
 
     # async def disconnect(self, close_code):
