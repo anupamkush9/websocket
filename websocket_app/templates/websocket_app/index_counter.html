@@ -16,14 +16,15 @@
        
         COUNT : <h1 id="h1_id"> </h1>
         <script>
-            const socket = new WebSocket('ws://localhost:8000/ws/asyncwebsocket_consumer/');
+            // const socket = new WebSocket('ws://localhost:8000/ws/My_JsonWebsocketConsumer/');
+            const socket = new WebSocket('ws://localhost:8000/ws/My_AsyncJsonWebsocketConsumer/');
 
             // Event listener for when the connection is established
             socket.addEventListener('open', (event) => {
                 console.log('WebSocket connection opened:', event);
                 
                 // Send a message to the server after the connection is open
-                socket.send('Hi server, this is a message from the client!');
+                socket.send(JSON.stringify({"message" : "Hi server, this is a message from the client!"}));
             });
             
             // Event listener for receiving messages from the server
@@ -31,7 +32,7 @@
                 const data = JSON.parse(event.data)
                
                
-                console.log('Message received from server:', event.data);
+                console.log('Message received from server:', data);
                 document.getElementById("h1_id").innerHTML = data.message
             });
             
