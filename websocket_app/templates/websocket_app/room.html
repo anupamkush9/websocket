@@ -6,7 +6,11 @@
 </head>
 <body>
     <h1> Welcome to {{room_name}} room </h1>
-    <textarea id="chat-log" cols="100" rows="20"></textarea><br>
+    <textarea id="chat-log" cols="100" rows="20">
+        {% for chat in chats %}
+            {{ chat.content }}
+        {% endfor %}
+    </textarea><br>
     <input id="chat-message-input" type="text" size="100"><br>
     <input id="chat-message-submit" type="button" value="Send">
     {{ room_name|json_script:"room-name" }}
@@ -33,7 +37,7 @@
             console.log('WebSocket connection opened:', event);
             
             // Send a message to the server after the connection is open
-            chatSocket.send(JSON.stringify({"message":'Hi server, this is a message from the client!'}));
+            // chatSocket.send(JSON.stringify({"message":'Hi server, this is a message from the client!'}));
         });
 
         chatSocket.onmessage = function(e) {

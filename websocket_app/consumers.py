@@ -4,6 +4,7 @@ from channels.consumer import SyncConsumer
 from channels.consumer import AsyncConsumer
 from channels.exceptions import StopConsumer
 import time
+from .models import Chat, Group
 from channels.generic.websocket import WebsocketConsumer
 
 
@@ -141,7 +142,13 @@ class MyWebsocketConsumer(WebsocketConsumer):
         # You can call:
         client_data = json.loads(text_data)
 
-        
+        group = Group.objects.get(name = self.room_name)
+        print("------->",group)
+        print("---type---->",type(group))
+        chat = Chat(content=client_data["message"],
+                    group=group)
+        chat.save()
+
         # Send message to room group
         async_to_sync(self.channel_layer.group_send)(
             self.room_name, {"type": "chat.message", "message": client_data}
