@@ -23,15 +23,24 @@
         const chatSocket = new WebSocket(
             'ws://'
             + window.location.host
-            + '/ws/async_consumer/'
+            + '/ws/MyWebsocketConsumer/'
             + roomName
             + '/'
         );
 
+        // Event listener for when the connection is established
+        chatSocket.addEventListener('open', (event) => {
+            console.log('WebSocket connection opened:', event);
+            
+            // Send a message to the server after the connection is open
+            chatSocket.send(JSON.stringify({"message":'Hi server, this is a message from the client!'}));
+        });
+
         chatSocket.onmessage = function(e) {
             console.log("log e ", e);
-            const data = e.data;
-            document.querySelector('#chat-log').value += (data + '\n');
+            const data = JSON.parse(e.data);
+            console.log(typeof data)
+            document.querySelector('#chat-log').value += (data.message + '\n');
         };
 
         chatSocket.onclose = function(e) {
