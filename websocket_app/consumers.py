@@ -8,6 +8,38 @@ from websocket_app.models import Chat, Group
 from channels.db import database_sync_to_async
 from channels.generic.websocket import WebsocketConsumer
 
+import json
+from channels.generic.websocket import AsyncWebsocketConsumer
+from asgiref.sync import async_to_sync
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from .models import Ticket  # Import your Ticket model
+from channels.layers import get_channel_layer
+
+class TicketConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+        await self.channel_layer.group_add("ticket_updates", self.channel_name)
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard("ticket_updates", self.channel_name)
+
+    async def send_update(self, event):
+        print("evenet:::",event)
+        await self.send(text_data=json.dumps(event["message"]))
+
+@receiver(post_save, sender=Ticket)
+def send_ticket_update(sender, instance, created, **kwargs):
+    print("post save signal claeed", f"just now instance :: {instance.title} is updated")
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        "ticket_updates",  # Group name
+        {
+            "type": "send.update",
+            "message": f"just now instance :: {instance.title} is updated",
+        },
+    )
+
 class MySyncConsumer(SyncConsumer):
 
     def websocket_connect(self, event):

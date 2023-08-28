@@ -14,9 +14,9 @@
     </head>
     <body>
        
-        COUNT : <h1 id="h1_id"> </h1>
+        Here i am listing for Ticket model changes : <h1 id="h1_id"> </h1>
         <script>
-            const socket = new WebSocket('ws://localhost:8000/ws/websocket_consumer/');
+            const socket = new WebSocket('ws://localhost:8000/ws/TicketConsumer/');
 
             // Event listener for when the connection is established
             socket.addEventListener('open', (event) => {
@@ -32,7 +32,7 @@
                
                
                 console.log('Message received from server:', event.data);
-                document.getElementById("h1_id").innerHTML = data.message
+                document.getElementById("h1_id").innerHTML = event.data
             });
             
             // Event listener for when the connection is closed
